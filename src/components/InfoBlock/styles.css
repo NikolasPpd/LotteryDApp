@@ -1,0 +1,21 @@
+.info-block {
+    padding: 10px 0;
+}
+
+.info-title {
+    color: #333;
+    margin: 0 0 10px 0;
+    font-size: 1.2em;
+}
+
+.info-text {
+    display: inline-block;
+    background-color: #f0eaff;
+    color: #505050;
+    font-weight: bold;
+    padding: 6px 12px 4px;
+    margin: 0;
+    word-break: break-all;
+    font-family: "Courier New", Courier, monospace;
+    border-radius: 6px;
+}

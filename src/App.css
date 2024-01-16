@@ -1,0 +1,14 @@
+.title {
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.title-line {
+    width: 50%;
+    margin: 0 auto;
+    border: 0;
+    height: 2px;
+    background-color: #acacac;
+    margin-bottom: 20px;
+}

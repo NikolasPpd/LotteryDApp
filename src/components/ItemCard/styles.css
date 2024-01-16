@@ -1,0 +1,61 @@
+.custom-card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(159, 159, 159, 0.15);
+    transition: box-shadow 0.2s ease;
+}
+
+.custom-card:hover {
+    box-shadow: 0 6px 15px rgba(159, 159, 159, 0.3);
+}
+
+.custom-card-header {
+    padding: 10px;
+    background-color: #e9ebec;
+}
+
+.custom-card-title {
+    margin: 0;
+}
+
+.custom-card-image-container {
+    position: relative;
+}
+
+.custom-card-img {
+    max-height: 200px;
+    width: 100%;
+    object-fit: cover;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.custom-card-overlay {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.custom-bid-btn {
+    transition: transform 0.3s ease;
+    align-self: stretch;
+}
+
+.custom-bid-btn:active {
+    transform: scale(0.95);
+}
+
+.custom-bid-badge {
+    display: inline-block;
+    padding: 4px 20px;
+    font-size: 18px;
+    background-color: #6c757d;
+    color: #fff;
+    border-radius: 4px;
+    align-self: stretch;
+    font-weight: bold;
+}
