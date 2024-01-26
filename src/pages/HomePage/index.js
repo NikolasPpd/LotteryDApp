@@ -2,20 +2,19 @@ import React, { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { GrPowerReset } from "react-icons/gr";
-import { lottery } from "../../lottery";
 import web3 from "../../web3";
 import TransferOwnershipModal from "../../components/TransferOwnershipModal";
 import ItemCardGroup from "../../components/ItemCardGroup";
 import InfoBlock from "../../components/InfoBlock";
 import getInfoBlocksConfig from "../../config/infoBlockConfig";
 import * as BlockchainService from "../../services/blockchainService";
-import useEthereumAccount from "../../hooks/useEthereumAccount";
 import useEventListeners from "../../hooks/useEventListeners";
-import { concatAddress } from "../../utils/helpers";
+import { concatAddress, handleLotteryTransaction } from "../../utils/helpers";
 import "./styles.css";
 
-const HomePage = () => {
+const HomePage = ({ currentAccount }) => {
     const [owner, setOwner] = useState("");
+    const [lottery, setLottery] = useState(null);
     const additionalOwner = "0x153dfef4355E823dCB0FCc76Efe942BefCa86477";
     const [isOwner, setIsOwner] = useState(false);
     const [contractBalance, setContractBalance] = useState(0); // In wei
@@ -26,8 +25,21 @@ const HomePage = () => {
     const [item2Bids, setItem2Bids] = useState(0);
     const itemNames = ["Car", "Phone", "PS5"];
     const itemEmojis = ["🚗", "📱", "🎮"];
-    const currentAccount = useEthereumAccount();
     const currentAccountRef = useRef(currentAccount);
+
+    useEffect(() => {
+        const loadLotteryContract = async () => {
+            try {
+                const { getLotteryContract } = await import("../../lottery");
+                const lotteryInstance = getLotteryContract();
+                setLottery(lotteryInstance);
+            } catch (error) {
+                console.error("Error loading lottery contract:", error);
+            }
+        };
+
+        loadLotteryContract();
+    }, []);
 
     useEffect(() => {
         function checkIsOwner() {
@@ -191,52 +203,64 @@ const HomePage = () => {
     }, [currentStage, isOwner]);
 
     const bidClickHandler = async (itemId) => {
-        await lottery.methods.buyEntry(itemId).send({
-            from: currentAccount,
-            value: 10000000000000000n,
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.buyEntry(itemId).send({
+                from: currentAccount,
+                value: 10000000000000000n,
+            });
         });
     };
 
     const revealWinners = async () => {
-        await lottery.methods.revealWinners().send({
-            from: currentAccount,
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.revealWinners().send({
+                from: currentAccount,
+            });
         });
     };
 
     const resetLottery = async () => {
-        await lottery.methods.reset().send({
-            from: currentAccount,
-        });
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.reset().send({
+                from: currentAccount,
+            });
 
-        setCurrentRaffle(await BlockchainService.fetchCurrentRaffle());
-        resetBidCounts();
+            setCurrentRaffle(await BlockchainService.fetchCurrentRaffle());
+            resetBidCounts();
 
-        toast("A new lottery round just started!", {
-            icon: "🍀",
+            toast("A new lottery round just started!", {
+                icon: "🍀",
+            });
         });
     };
 
     const withdrawFunds = async () => {
-        await lottery.methods.withdraw().send({
-            from: currentAccount,
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.withdraw().send({
+                from: currentAccount,
+            });
         });
     };
 
     const transferOwnership = async (newOwner) => {
-        await lottery.methods.transferOwnership(newOwner).send({
-            from: currentAccount,
-        });
-        setOwner(newOwner);
-        toast.success(`Transferred ownership to ${newOwner}!`, {
-            duration: 3500,
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.transferOwnership(newOwner).send({
+                from: currentAccount,
+            });
+            setOwner(newOwner);
+            toast.success(`Transferred ownership to ${newOwner}!`, {
+                duration: 3500,
+            });
         });
     };
 
     const destroyContract = async () => {
-        await lottery.methods.destroyContract().send({
-            from: currentAccount,
+        await handleLotteryTransaction(async () => {
+            await lottery.methods.destroyContract().send({
+                from: currentAccount,
+            });
+            setContractBalance(await BlockchainService.fetchContractBalance());
         });
-        setContractBalance(await BlockchainService.fetchContractBalance());
     };
 
     const infoBlocks = getInfoBlocksConfig({
@@ -271,7 +295,7 @@ const HomePage = () => {
                             Declare Winners
                         </button>
                         <button
-                            className='btn btn-secondary custom-bid-btn m-1'
+                            className='btn btn-outline-primary custom-bid-btn m-1'
                             onClick={withdrawFunds}
                         >
                             Withdraw Funds
@@ -280,10 +304,13 @@ const HomePage = () => {
                         {/* Grouped Icon Buttons */}
                         <div className='d-flex'>
                             <button
-                                className='btn btn-danger custom-bid-btn m-1'
-                                onClick={destroyContract}
+                                className={`btn btn-primary custom-bid-btn m-1 ${
+                                    currentStage !== 1n ? "disabled" : ""
+                                }`}
+                                title='Reset the lottery and start a new round'
+                                onClick={resetLottery}
                             >
-                                <FaRegTrashAlt />
+                                <GrPowerReset />
                             </button>
                             {owner !== "" && (
                                 <TransferOwnershipModal
@@ -293,10 +320,11 @@ const HomePage = () => {
                                 />
                             )}
                             <button
-                                className='btn btn-primary custom-bid-btn m-1'
-                                onClick={resetLottery}
+                                className='btn btn-danger custom-bid-btn m-1'
+                                onClick={destroyContract}
+                                title="Destroy the contract and withdraw all funds to the owner's account"
                             >
-                                <GrPowerReset />
+                                <FaRegTrashAlt />
                             </button>
                         </div>
                     </div>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 const useEthereumAccount = () => {
     const [currentAccount, setCurrentAccount] = useState("");
+    const [error, setError] = useState("");
 
     useEffect(() => {
         const fetchAccount = async () => {
@@ -11,17 +12,18 @@ const useEthereumAccount = () => {
                         method: "eth_requestAccounts",
                     });
                     setCurrentAccount(accounts[0]);
+                    setError(""); // Clear any previous errors
 
                     // MetaMask account change event listener
                     window.ethereum.on("accountsChanged", (accounts) => {
-                        setCurrentAccount(accounts[0]);
+                        setCurrentAccount(accounts[0] || "");
                     });
                 } catch (error) {
-                    console.error("Error accessing MetaMask accounts:", error);
+                    setError("MetaMask connection denied.");
                 }
             } else {
-                console.log(
-                    "Ethereum object not found, you need to install MetaMask!"
+                setError(
+                    "MetaMask is not installed. Please install MetaMask to use this app."
                 );
             }
         };
@@ -29,7 +31,7 @@ const useEthereumAccount = () => {
         fetchAccount();
     }, []);
 
-    return currentAccount;
+    return { currentAccount, error };
 };
 
 export default useEthereumAccount;

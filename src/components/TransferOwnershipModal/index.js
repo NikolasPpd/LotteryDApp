@@ -31,6 +31,7 @@ const TransferOwnershipModal = ({ owner, isOwner, transferOwnership }) => {
                     !isOwner ? "disabled" : ""
                 }`}
                 onClick={() => setShowModal(true)}
+                title="Transfer ownership to a different address"
             >
                 <TbTransfer />
             </button>

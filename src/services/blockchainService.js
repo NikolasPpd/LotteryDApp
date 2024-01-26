@@ -1,5 +1,15 @@
-import { lottery } from "../lottery";
+import { getLotteryContract } from "../lottery";
 import web3 from "../web3";
+
+let lottery;
+
+try {
+    lottery = getLotteryContract();
+} catch (err) {
+    console.log(
+        "MetaMask is not installed. Please install MetaMask to use this app."
+    );
+}
 
 export const fetchOwner = async () => {
     const ownerAddress = await lottery.methods.beneficiary().call();
