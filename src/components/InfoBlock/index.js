@@ -1,6 +1,5 @@
 import React from "react";
 import "./styles.css";
-import { FaCrown } from "react-icons/fa";
 
 const InfoBlock = ({ title, text, colorCode = "#f0eaff" }) => {
     const textStyle = {

@@ -1,11 +1,14 @@
 import React from "react";
 import "./styles.css";
 
-const ItemCard = ({ itemName, imageUrl, bids }) => {
-    const handleBidClick = () => {
-        // TODO: Implement bidding
-    };
-
+const ItemCard = ({
+    itemId,
+    itemName,
+    imageUrl,
+    bidCount,
+    bidClickHandler,
+    isDisabled,
+}) => {
     return (
         <div className='custom-card text-center'>
             <div className='custom-card-header'>
@@ -19,12 +22,14 @@ const ItemCard = ({ itemName, imageUrl, bids }) => {
                 />
                 <div className='custom-card-overlay'>
                     <button
-                        className='btn btn-primary custom-bid-btn'
-                        onClick={handleBidClick}
+                        className={`btn btn-primary custom-bid-btn ${
+                            isDisabled ? "disabled" : ""
+                        }`}
+                        onClick={() => bidClickHandler(itemId)}
                     >
                         Bid
                     </button>
-                    <span className='custom-bid-badge'>{bids}</span>
+                    <span className='custom-bid-badge'>{bidCount}</span>
                 </div>
             </div>
         </div>

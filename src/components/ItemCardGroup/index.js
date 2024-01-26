@@ -1,10 +1,16 @@
 import React from "react";
-import ItemCard from "../ItemCard"; // Make sure to import your ItemCard component
+import ItemCard from "../ItemCard";
 import carImage from "../../images/car.jpg";
 import phoneImage from "../../images/phone.jpg";
 import ps5Image from "../../images/ps5.jpg";
 
-const ItemCardGroup = ({ item0Bids, item1Bids, item2Bids }) => {
+const ItemCardGroup = ({
+    item0Bids,
+    item1Bids,
+    item2Bids,
+    bidClickHandler,
+    isDisabled,
+}) => {
     const itemsData = [
         {
             itemName: "Car",
@@ -29,9 +35,12 @@ const ItemCardGroup = ({ item0Bids, item1Bids, item2Bids }) => {
                 {itemsData.map((item, index) => (
                     <div className='col-md-4 mb-4' key={index}>
                         <ItemCard
+                            itemId={index}
                             itemName={item.itemName}
                             imageUrl={item.imageUrl}
-                            bids={item.bids}
+                            bidCount={item.bids}
+                            bidClickHandler={bidClickHandler}
+                            isDisabled={isDisabled}
                         />
                     </div>
                 ))}

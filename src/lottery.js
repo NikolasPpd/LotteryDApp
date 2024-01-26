@@ -1,6 +1,6 @@
 import web3 from "./web3";
 
-const address = "0x6c0419a0AD3847Cd354c32CA743Ea835E8e3dAE5";
+const address = "0xC3C14870077F5F23A9752e1f68c7f2363298044E";
 
 const abi = [
 	{
@@ -34,6 +34,53 @@ const abi = [
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "itemId",
+				"type": "uint256"
+			}
+		],
+		"name": "buyEntry",
+		"outputs": [],
+		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "destroyContract",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "reset",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "revealWinners",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "newOwner",
+				"type": "address"
+			}
+		],
+		"name": "transferOwnership",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
@@ -60,7 +107,7 @@ const abi = [
 	},
 	{
 		"inputs": [],
-		"name": "advanceStage",
+		"name": "withdraw",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -122,19 +169,6 @@ const abi = [
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "uint256",
-				"name": "itemId",
-				"type": "uint256"
-			}
-		],
-		"name": "buyEntry",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "currentRaffle",
 		"outputs": [
@@ -145,13 +179,6 @@ const abi = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "destroyContract",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -175,20 +202,6 @@ const abi = [
 	},
 	{
 		"inputs": [],
-		"name": "reset",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "revealWinners",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "stage",
 		"outputs": [
 			{
@@ -198,19 +211,6 @@ const abi = [
 			}
 		],
 		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "newOwner",
-				"type": "address"
-			}
-		],
-		"name": "transferOwnership",
-		"outputs": [],
-		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -244,14 +244,14 @@ const abi = [
 		],
 		"stateMutability": "view",
 		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "withdraw",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
 	}
 ];
 
-export default new web3.eth.Contract(abi, address);
+const lottery = new web3.eth.Contract(abi, address);
+
+const checkContractExists = async () => {
+    const code = await web3.eth.getCode(address);
+    return code !== "0x";
+};
+
+export { lottery, checkContractExists };
