@@ -19,13 +19,12 @@ const HomePage = ({ currentAccount }) => {
     const [isOwner, setIsOwner] = useState(false);
     const [contractBalance, setContractBalance] = useState(0); // In wei
     const [currentRaffle, setCurrentRaffle] = useState(0n);
-    const [currentStage, setCurrentStage] = useState(-1n); // 0: Bid, 1: Done
+    const [currentStage, setCurrentStage] = useState(-1n); // 0n: Bid, 1n: Done
     const [item0Bids, setItem0Bids] = useState(0);
     const [item1Bids, setItem1Bids] = useState(0);
     const [item2Bids, setItem2Bids] = useState(0);
     const itemNames = ["Car", "Phone", "PS5"];
     const itemEmojis = ["🚗", "📱", "🎮"];
-    const currentAccountRef = useRef(currentAccount);
 
     useEffect(() => {
         const loadLotteryContract = async () => {
@@ -42,21 +41,10 @@ const HomePage = ({ currentAccount }) => {
     }, []);
 
     useEffect(() => {
-        function checkIsOwner() {
-            const currAcc = currentAccountRef.current.toLowerCase();
-            if (
-                currAcc === owner.toLowerCase() ||
-                currAcc === additionalOwner.toLowerCase()
-            ) {
-                setIsOwner(true);
-            } else {
-                setIsOwner(false);
-            }
-        }
-
-        currentAccountRef.current = currentAccount;
-        checkIsOwner();
-    }, [currentAccount]);
+        setIsOwner(
+            currentAccount === owner || currentAccount === additionalOwner
+        );
+    }, [currentAccount, owner]);
 
     useEffect(() => {
         const initializeOwner = async () => {
@@ -105,7 +93,8 @@ const HomePage = ({ currentAccount }) => {
         handleBidCounts,
         itemNames,
         itemEmojis,
-        concatAddress
+        concatAddress,
+        setCurrentStage
     );
 
     function resetBidCounts() {
@@ -138,6 +127,7 @@ const HomePage = ({ currentAccount }) => {
     }
 
     async function getWinnerEvents() {
+        if (currentStage === -1n || isOwner) return;
         console.log("GETTING WINNER EVENTS");
         // If stage is 1, the winners have been revealed
         // but the next raffle hasn't started yet
@@ -149,7 +139,6 @@ const HomePage = ({ currentAccount }) => {
             checkRaffle = currentRaffle - 1n;
             word = "the previous";
         }
-        console.log("Latest winners from raffle: ", checkRaffle);
 
         if (checkRaffle >= 0) {
             const pastEvents = await lottery.getPastEvents("Winner", {
@@ -157,7 +146,7 @@ const HomePage = ({ currentAccount }) => {
                 toBlock: "latest",
                 filter: {
                     raffleNumber: checkRaffle,
-                    winnerAddress: currentAccountRef.current,
+                    winnerAddress: currentAccount,
                 },
             });
 
@@ -166,10 +155,7 @@ const HomePage = ({ currentAccount }) => {
                     const address = event.returnValues.winnerAddress;
                     const itemName =
                         itemNames[Number(event.returnValues.itemId)];
-                    if (
-                        address.toLowerCase() ===
-                        currentAccountRef.current.toLowerCase()
-                    ) {
+                    if (address === currentAccount) {
                         toast(`You won the ${itemName} in ${word} round!`, {
                             icon: itemEmojis[Number(event.returnValues.itemId)],
                             duration: 5000,
@@ -200,7 +186,7 @@ const HomePage = ({ currentAccount }) => {
         if (currentRaffle > 0n && !isOwner) {
             getWinnerEvents();
         }
-    }, [currentStage, isOwner]);
+    }, [currentStage, isOwner, currentAccount]);
 
     const bidClickHandler = async (itemId) => {
         await handleLotteryTransaction(async () => {
@@ -216,6 +202,7 @@ const HomePage = ({ currentAccount }) => {
             await lottery.methods.revealWinners().send({
                 from: currentAccount,
             });
+            setCurrentStage(1n);
         });
     };
 
@@ -227,6 +214,7 @@ const HomePage = ({ currentAccount }) => {
 
             setCurrentRaffle(await BlockchainService.fetchCurrentRaffle());
             resetBidCounts();
+            setCurrentStage(0n);
 
             toast("A new lottery round just started!", {
                 icon: "🍀",
@@ -289,7 +277,9 @@ const HomePage = ({ currentAccount }) => {
                 <div className='container mb-3'>
                     <div className='d-flex justify-content-center flex-wrap'>
                         <button
-                            className='btn btn-primary custom-bid-btn m-1'
+                            className={`btn btn-primary custom-bid-btn m-1 ${
+                                currentStage === 1n ? "disabled" : ""
+                            }`}
                             onClick={revealWinners}
                         >
                             Declare Winners

@@ -7,7 +7,8 @@ const useEventListeners = (
     handleBidCounts,
     itemNames,
     itemEmojis,
-    concatAddress
+    concatAddress,
+    setCurrentStage
 ) => {
     const currentAccountRef = useRef(currentAccount);
 
@@ -25,10 +26,7 @@ const useEventListeners = (
                 lottery.events.BidPlaced().on("data", async (data) => {
                     handleBidCounts(data.returnValues);
                     const address = data.returnValues.bidder;
-                    if (
-                        address.toLowerCase() ===
-                        currentAccountRef.current.toLowerCase()
-                    ) {
+                    if (address === currentAccountRef.current) {
                         toast.success("Your bid was placed!");
                         return;
                     }
@@ -44,13 +42,11 @@ const useEventListeners = (
 
                 // Event listener for winners being revealed
                 lottery.events.Winner().on("data", async (data) => {
+                    setCurrentStage(1n);
                     const address = data.returnValues.winnerAddress;
                     const itemName =
                         itemNames[Number(data.returnValues.itemId)];
-                    if (
-                        address.toLowerCase() ===
-                        currentAccountRef.current.toLowerCase()
-                    ) {
+                    if (address === currentAccountRef.current) {
                         toast.success(`You just won the ${itemName}!`, {
                             icon: itemEmojis[Number(data.returnValues.itemId)],
                             duration: 5000,
@@ -74,7 +70,7 @@ const useEventListeners = (
         };
 
         setupEventListeners();
-    }, [handleBidCounts, itemNames, itemEmojis, concatAddress]);
+    }, []);
 };
 
 export default useEventListeners;

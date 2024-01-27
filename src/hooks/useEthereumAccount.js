@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Web3 from "web3";
 
 const useEthereumAccount = () => {
     const [currentAccount, setCurrentAccount] = useState("");
@@ -11,12 +12,23 @@ const useEthereumAccount = () => {
                     const accounts = await window.ethereum.request({
                         method: "eth_requestAccounts",
                     });
-                    setCurrentAccount(accounts[0]);
+                    // Convert to checksum address
+                    const checksumAddress = Web3.utils.toChecksumAddress(
+                        accounts[0]
+                    );
+                    setCurrentAccount(checksumAddress);
                     setError(""); // Clear any previous errors
 
                     // MetaMask account change event listener
                     window.ethereum.on("accountsChanged", (accounts) => {
-                        setCurrentAccount(accounts[0] || "");
+                        if (accounts.length > 0) {
+                            // Convert to checksum address
+                            const updatedChecksumAddress =
+                                Web3.utils.toChecksumAddress(accounts[0]);
+                            setCurrentAccount(updatedChecksumAddress);
+                        } else {
+                            setCurrentAccount("");
+                        }
                     });
                 } catch (error) {
                     setError("MetaMask connection denied.");
