@@ -20,6 +20,7 @@ const HomePage = ({ currentAccount }) => {
     const [contractBalance, setContractBalance] = useState(0); // In wei
     const [currentRaffle, setCurrentRaffle] = useState(0n);
     const [currentStage, setCurrentStage] = useState(-1n); // 0n: Bid, 1n: Done
+    const [dataInitialized, setDataInitialized] = useState(false);
     const [item0Bids, setItem0Bids] = useState(0);
     const [item1Bids, setItem1Bids] = useState(0);
     const [item2Bids, setItem2Bids] = useState(0);
@@ -59,9 +60,17 @@ const HomePage = ({ currentAccount }) => {
         const initializeData = async () => {
             setCurrentRaffle(await BlockchainService.fetchCurrentRaffle());
             setCurrentStage(await BlockchainService.fetchCurrentStage());
+            setDataInitialized(true);
         };
         initializeData();
     }, []);
+
+    useEffect(() => {
+        if (dataInitialized) {
+            getWinnerEvents();
+            setDataInitialized(false);
+        }
+    }, [dataInitialized]);
 
     useEffect(() => {
         const updateContractBalance = async () => {
@@ -127,7 +136,7 @@ const HomePage = ({ currentAccount }) => {
     }
 
     async function getWinnerEvents() {
-        if (currentStage === -1n || isOwner) return;
+        if (currentStage === -1n || isOwner || currentRaffle === 0n) return;
         console.log("GETTING WINNER EVENTS");
         // If stage is 1, the winners have been revealed
         // but the next raffle hasn't started yet
@@ -183,10 +192,8 @@ const HomePage = ({ currentAccount }) => {
     }, [currentStage]);
 
     useEffect(() => {
-        if (currentRaffle > 0n && !isOwner) {
-            getWinnerEvents();
-        }
-    }, [currentStage, isOwner, currentAccount]);
+        getWinnerEvents();
+    }, [isOwner, currentAccount]);
 
     const bidClickHandler = async (itemId) => {
         await handleLotteryTransaction(async () => {
