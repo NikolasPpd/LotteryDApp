@@ -11,22 +11,37 @@ const App = () => {
 
     useEffect(() => {
         const init = async () => {
-            if (!web3 && !ethereumError) {
+            if (!web3) {
                 setError(
                     "MetaMask is not installed. Please install MetaMask to use this app."
                 );
-            } else if (ethereumError) {
+                return;
+            }
+
+            if (ethereumError) {
                 setError(ethereumError);
-            } else {
-                try {
-                    const lotteryModule = await import("./lottery");
-                    const lotteryInstance = lotteryModule.getLotteryContract();
-                    setLottery(lotteryInstance);
-                } catch (err) {
+                return;
+            }
+
+            try {
+                const lotteryModule = await import("./lottery");
+                const lotteryInstance = lotteryModule.getLotteryContract();
+
+                // Check if the contract exists at the specified address
+                const code = await web3.eth.getCode(
+                    lotteryInstance.options.address
+                );
+                if (code === "0x" || code === "0x0") {
+                    // Contract does not exist at the address
                     setError(
-                        "Unable to initialize the contract. " + err.message
+                        "The smart contract does not exist at the specified address."
                     );
+                    return;
                 }
+
+                setLottery(lotteryInstance);
+            } catch (err) {
+                setError("Unable to initialize the contract. " + err.message);
             }
         };
 
