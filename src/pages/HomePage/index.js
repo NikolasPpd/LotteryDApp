@@ -68,6 +68,7 @@ const HomePage = ({ currentAccount }) => {
     useEffect(() => {
         if (dataInitialized) {
             getWinnerEvents();
+            getBidPlacedEvents();
             setDataInitialized(false);
         }
     }, [dataInitialized]);
@@ -136,7 +137,7 @@ const HomePage = ({ currentAccount }) => {
     }
 
     async function getWinnerEvents() {
-        if (currentStage === -1n || isOwner || currentRaffle === 0n) return;
+        if (currentStage === -1n || isOwner) return;
         console.log("GETTING WINNER EVENTS");
         // If stage is 1, the winners have been revealed
         // but the next raffle hasn't started yet
@@ -144,7 +145,7 @@ const HomePage = ({ currentAccount }) => {
         let checkRaffle = currentRaffle;
         let word = "this";
         // If stage is 0, there might be winners from the previous raffle
-        if (currentStage === 0n) {
+        if (currentStage === 0n && currentRaffle > 0n) {
             checkRaffle = currentRaffle - 1n;
             word = "the previous";
         }
@@ -171,7 +172,7 @@ const HomePage = ({ currentAccount }) => {
                         });
                     }
                 });
-            } else {
+            } else if (!(checkRaffle === 0n && currentStage === 0n)) {
                 toast(
                     `Unfortunately you didn't win anything in ${word} round. Better luck next time!`,
                     {
@@ -186,7 +187,7 @@ const HomePage = ({ currentAccount }) => {
     }
 
     useEffect(() => {
-        if (currentRaffle > 0n) {
+        if (currentRaffle > 0n && !dataInitialized) {
             getBidPlacedEvents();
         }
     }, [currentStage]);
@@ -234,6 +235,7 @@ const HomePage = ({ currentAccount }) => {
             await lottery.methods.withdraw().send({
                 from: currentAccount,
             });
+            setContractBalance(0n);
         });
     };
 
@@ -317,7 +319,9 @@ const HomePage = ({ currentAccount }) => {
                                 />
                             )}
                             <button
-                                className='btn btn-danger custom-bid-btn m-1'
+                                className={`btn btn-danger custom-bid-btn m-1 ${
+                                    currentStage !== 1n ? "disabled" : ""
+                                }`}
                                 onClick={destroyContract}
                                 title="Destroy the contract and withdraw all funds to the owner's account"
                             >
